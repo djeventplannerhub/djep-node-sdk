@@ -26,6 +26,38 @@ class RateLimitError extends DJEPError {
   constructor(message, code) { super(message, code); this.name = 'RateLimitError'; }
 }
 
+/**
+ * HTTP 409. The request conflicts with something that already exists or is
+ * still in use.
+ *
+ * The API returns context alongside a 409 and this error preserves it.
+ * create_addon on a duplicate name returns the existing addonid:
+ *
+ *   try {
+ *     await djep.addons.create({ name: 'Uplighting', price: 300 });
+ *   } catch (e) {
+ *     if (e instanceof ConflictError) {
+ *       const addon = await djep.addons.get(e.existingId);
+ *     }
+ *   }
+ */
+class ConflictError extends DJEPError {
+  constructor(message, code, details) {
+    super(message, code);
+    this.name = 'ConflictError';
+    this.details = details || null;
+  }
+
+  /** The id of the existing record, or null when the API did not name one. */
+  get existingId() {
+    if (!this.details) return null;
+    for (const key of ['addonid', 'packageid', 'venueid', 'equipmentid', 'systemid', 'eventid', 'clientid']) {
+      if (this.details[key] !== undefined) return Number(this.details[key]);
+    }
+    return null;
+  }
+}
+
 class HttpClient {
   constructor(apiKey, domain, options = {}) {
     this.apiKey = apiKey;
@@ -98,6 +130,7 @@ class HttpClient {
               case 403: reject(new ForbiddenError(message, code)); break;
               case 404: reject(new NotFoundError(message, code)); break;
               case 429: reject(new RateLimitError(message, code)); break;
+              case 409: reject(new ConflictError(message, code, response.error)); break;
               case 400: reject(new ValidationError(message, code)); break;
               default: reject(new DJEPError(message, code));
             }
@@ -131,4 +164,5 @@ module.exports = {
   ValidationError,
   ForbiddenError,
   RateLimitError,
+  ConflictError,
 };

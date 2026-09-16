@@ -108,6 +108,27 @@ class Events extends Resource {
   async tasks(eventid, params = {}) {
     return this.http.get('event_tasks', { ...params, eventid });
   }
+
+  /**
+   * Set which systems are assigned to an event.
+   * REPLACES the whole list; send every system you want on the event.
+   * Maximum of 10. Pass an empty array to clear.
+   */
+  async assignSystems(eventid, systemids) {
+    return this.http.post('assign_event_systems', { eventid, systems: systemids.join(',') });
+  }
+
+  /**
+   * Set which standalone equipment is assigned to an event.
+   * Accepts either [318, 412] or { 318: 2, 412: 1 } for quantities.
+   * REPLACES the whole list. Pass an empty array to clear.
+   */
+  async assignEquipment(eventid, equipment) {
+    const parts = Array.isArray(equipment)
+      ? equipment.map(String)
+      : Object.entries(equipment).map(([id, qty]) => `${id}=${qty}`);
+    return this.http.post('assign_event_equipment', { eventid, equipment: parts.join(',') });
+  }
 }
 
 module.exports = Events;
