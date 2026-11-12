@@ -29,6 +29,35 @@ class EventPlanning extends Resource {
     if (formid > 0) data.formid = formid;
     return this.http.post('update_event_planning', data);
   }
+
+  /**
+   * Replace one of an event's two timelines.
+   * @param {number} eventid
+   * @param {Array} activities - rows in running order, each with any of time,
+   *   name and comments. Up to 52 are stored; anything past that is dropped.
+   *   Pass an empty array to clear the timeline.
+   * @param {string} headline - text shown above the activities
+   * @param {number} slot - 1 for the timeline, 2 for the second timeline
+   *
+   * REPLACES the whole timeline, so send every activity you want kept.
+   * Clearing it removes the headline too, because a timeline with a headline
+   * and no activities reads back as one blank activity.
+   *
+   *   await djep.planning.updateTimeline(252318, [
+   *     { time: '6:00 PM', name: 'Guests arrive' },
+   *     { time: '7:30 PM', name: 'First dance', comments: 'Dim the lights' },
+   *   ], 'Reception running order');
+   */
+  async updateTimeline(eventid, activities, headline = '', slot = 1) {
+    const data = { eventid, slot, headline };
+    activities.slice(0, 52).forEach((activity, i) => {
+      const n = i + 1;
+      data[`activity_${n}_time`] = activity.time || '';
+      data[`activity_${n}_name`] = activity.name || '';
+      data[`activity_${n}_comments`] = activity.comments || '';
+    });
+    return this.http.post('update_timeline', data);
+  }
 }
 
 module.exports = EventPlanning;

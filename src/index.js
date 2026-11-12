@@ -22,7 +22,7 @@ const Planner = require('./resources/planner');
 const HourlyTracker = require('./resources/hourly-tracker');
 
 class DJEP {
-  static VERSION = '1.3.0';
+  static VERSION = '1.4.0';
 
   /**
    * Create a new DJEP API client

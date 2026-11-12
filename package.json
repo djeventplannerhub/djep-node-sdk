@@ -1,6 +1,6 @@
 {
   "name": "@djeventplannerhub/djep-sdk",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Official Node.js SDK for the DJ Event Planner (DJEP) REST API",
   "main": "src/index.js",
   "files": ["src/", "README.md", "LICENSE"],
